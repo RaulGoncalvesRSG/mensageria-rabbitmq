@@ -21,8 +21,15 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange directExchange(){
+        return new DirectExchange(EXG_NAME_MARKETPLACE, false, false);
+    }
+
+    @Bean
     public Binding binding(){
-        DirectExchange exchange = new DirectExchange(EXG_NAME_MARKETPLACE);
-        return BindingBuilder.bind(queue()).to(exchange).with(RK_PRODUCT_LOG);
+        return BindingBuilder
+                .bind(queue())
+                .to(directExchange())
+                .with(RK_PRODUCT_LOG);
     }
 }
