@@ -16,7 +16,6 @@ public class StringController {
 
     @GetMapping         //http://localhost:8082/produces?message=teste1
     public ResponseEntity<String> produces(@RequestParam("message") String message){
-        ProductDTO productDTO;
         service.producer(message);
         return ResponseEntity.ok().body("Sending message");
     }
