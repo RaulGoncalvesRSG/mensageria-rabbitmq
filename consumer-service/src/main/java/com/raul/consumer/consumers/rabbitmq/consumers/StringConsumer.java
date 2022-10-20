@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class StringConsumer {
 
-    @RabbitListener(queues = "product.log")
+    public static final String QUEUE_PRODUCT_LOG = "product.log";   //Queue
+
+    @RabbitListener(queues = QUEUE_PRODUCT_LOG)
     public void consumer(String message){
         log.info("Mensagem consumida: " + message);
     }
