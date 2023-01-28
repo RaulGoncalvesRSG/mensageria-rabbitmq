@@ -1,4 +1,4 @@
-package com.raul.commons.dtos;
+package dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
