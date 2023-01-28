@@ -1,4 +1,4 @@
-package dtos;
+package domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductDTO implements Serializable {
+public class Product implements Serializable {
 
     private String id;
     private String name;
