@@ -7,12 +7,12 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static constants.RabbitMQConstants.EXG_NAME_MARKETPLACE;
+import static constants.RabbitMQConstants.QUEUE_PRODUCT_LOG;
+import static constants.RabbitMQConstants.RK_PRODUCT_LOG;
+
 @Configuration
 public class RabbitMQConfig {
-
-    public static final String EXG_NAME_MARKETPLACE = "marketplace.direct";     //Exchange
-    public static final String QUEUE_PRODUCT_LOG = "product.log";   //Queue
-    public static final String RK_PRODUCT_LOG = "product.log";      //Routing key
 
     @Bean
     public Queue queue(){
