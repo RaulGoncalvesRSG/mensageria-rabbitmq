@@ -5,15 +5,28 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import static constants.RabbitMQConstants.RK_PRODUCT_LOG;
+import static constants.RabbitMQConstants.QUEUE_A;
+import static constants.RabbitMQConstants.QUEUE_B;
+import static constants.RabbitMQConstants.QUEUE_PRODUCT_LOG;
 
 @Slf4j
 @Component
 public class ProductConsumer {
 
-    @RabbitListener(queues = RK_PRODUCT_LOG)
+    private static final String MSG = "Mensagem consumida pela fila ";
+
+    @RabbitListener(queues = QUEUE_PRODUCT_LOG)
     public void consumer(Product message){
-        //Faz regra de negócio com obj recebido
-        log.info("Mensagem consumida: " + message.toString());
+        log.info(MSG + QUEUE_PRODUCT_LOG + ": " + message.toString());
+    }
+
+    @RabbitListener(queues = QUEUE_A)
+    public void consumerQueueA(Product message){
+        log.info(MSG + QUEUE_A + ": " + message.toString());
+    }
+
+    @RabbitListener(queues = QUEUE_B)
+    public void consumerQueueB(Product message){
+        log.info(MSG + QUEUE_B + ": " + message.toString());
     }
 }
