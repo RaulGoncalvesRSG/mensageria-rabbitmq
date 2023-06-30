@@ -22,4 +22,22 @@ public class ProductController {
         service.createProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PostMapping("/sendA")
+    public ResponseEntity<Product> sendA(@RequestBody Product product){
+        service.sendA(product);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/sendB")
+    public ResponseEntity<Product> sendB(@RequestBody Product product){
+        service.sendB(product);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/sendFanout")
+    public ResponseEntity<Product> sendC(@RequestBody Product product){
+        service.sendFanout(product);
+        return ResponseEntity.ok().build();
+    }
 }
