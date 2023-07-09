@@ -42,20 +42,20 @@ public class RabbitMQConfig {
     @Bean
     public Queue queueC(){
         Integer priority = 10;
-        Long tempo = 60000L;        //Tempo em ms 60000L = 60s
+        Long tempo = 60000L * 3;        //Tempo em ms 60000L = 60s
 
         Map<String, Object> args = new HashMap<>();
         args.put("x-max-priority", priority);           //Prioridade de consumo da msg
         args.put("x-message-ttl", tempo);               //time-to-live: tempo de vida da msg
         //Ligando a fila original na fila de DLQ
         args.put("x-dead-letter-exchange", DLX_EXG_DIRECT);         //Msgs com erro serão direcionadas para essa exg
-        args.put("x-dead-letter-routing-key", QUEUE_DLQ);           //Envia diretamente para fila, não passa pela exchange
+        args.put("x-dead-letter-routing-key", RK_DLX);              //Envia diretamente para fila, não passa pela exchange
 
         return new Queue(QUEUE_C, true, false, false, args);
     }
 
     @Bean
-    public Queue queueDLQ(){
+    public Queue deadLetterQueue(){
         return new Queue(QUEUE_DLQ, true);
     }
 
@@ -113,9 +113,9 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingDLQDirect(){
+    public Binding deadLetterBinding(){
         return BindingBuilder
-                .bind(queueDLQ())
+                .bind(deadLetterQueue())
                 .to(deadLetterExchange())
                 .with(RK_DLX);
     }

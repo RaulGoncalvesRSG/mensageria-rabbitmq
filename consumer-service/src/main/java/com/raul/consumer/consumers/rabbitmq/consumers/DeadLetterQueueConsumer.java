@@ -13,8 +13,10 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+import static constants.RabbitMQConstants.EXG_DIRECT;
 import static constants.RabbitMQConstants.QUEUE_DLQ;
 import static constants.RabbitMQConstants.QUEUE_DLQ_PARKING_LOT;
+import static constants.RabbitMQConstants.RK_C;
 
 @AllArgsConstructor
 @Slf4j
@@ -22,7 +24,7 @@ import static constants.RabbitMQConstants.QUEUE_DLQ_PARKING_LOT;
 public class DeadLetterQueueConsumer {
 
     private final RabbitTemplate rabbitTemplate;
-    private static final String X_RETRY_HEADER = "x-dlq-retry";
+    private static final String X_RETRY_HEADER = "x-dlq-retry";         //Qtd de vezes q a msg falhou no reprocessamento
 
     @RabbitListener(queues = QUEUE_DLQ)
     public void processar(Product message, @Headers Map<String, Object> headers){
@@ -44,14 +46,14 @@ public class DeadLetterQueueConsumer {
     }
 
     private void reprocessarMensagem(Product message, Map<String, Object> headers, Integer retryHeader) {     //Reprocessamento da msg, reenvia a msg para a DLQ. Tenta reprocessar ela 3x e caso n funcione, descarta a msg
-        Map<String, Object> updatedHeaders = new HashMap<>(headers);
-
         Integer tryCount = retryHeader + 1;
+        Map<String, Object> updatedHeaders = new HashMap<>(headers);
         updatedHeaders.put(X_RETRY_HEADER, tryCount);
 
+        //Lógica de reprocessamento. Reenvia a msg para fila com a qtd de tentativas atualizada
         MessagePostProcessor processor = getMessagePostProcessor(updatedHeaders);
         log.info("Reenviando venda de id " + message.getId() + "para a DLQ");
-        rabbitTemplate.convertAndSend(QUEUE_DLQ, message, processor);
+        rabbitTemplate.convertAndSend(EXG_DIRECT, RK_C, message, processor);
     }
 
     private MessagePostProcessor getMessagePostProcessor(Map<String, Object> updatedHeaders){       //Processador para att os headers
