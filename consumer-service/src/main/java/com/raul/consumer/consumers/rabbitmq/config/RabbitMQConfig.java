@@ -11,23 +11,24 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static constants.RabbitMQConstants.DLX_EXG_DIRECT;
 import static constants.RabbitMQConstants.EXG_DIRECT;
 import static constants.RabbitMQConstants.EXG_FANOUT;
-import static constants.RabbitMQConstants.EXG_NAME_MARKETPLACE;
 import static constants.RabbitMQConstants.QUEUE_A;
 import static constants.RabbitMQConstants.QUEUE_B;
-import static constants.RabbitMQConstants.QUEUE_PRODUCT_LOG;
+import static constants.RabbitMQConstants.QUEUE_C;
+import static constants.RabbitMQConstants.QUEUE_DLQ;
+import static constants.RabbitMQConstants.QUEUE_DLQ_PARKING_LOT;
 import static constants.RabbitMQConstants.RK_A;
 import static constants.RabbitMQConstants.RK_B;
-import static constants.RabbitMQConstants.RK_PRODUCT_LOG;
+import static constants.RabbitMQConstants.RK_C;
+import static constants.RabbitMQConstants.RK_DLX;
 
 @Configuration
 public class RabbitMQConfig {
-
-    @Bean
-    public Queue queueProduct(){       //Qnd a conexão com a fila terminar, ela n irá se deletar automaticamente
-        return new Queue(QUEUE_PRODUCT_LOG, false, false, false);
-    }
 
     @Bean
     public Queue queueA(){
@@ -40,8 +41,28 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange directExchangeProduct(){
-        return new DirectExchange(EXG_NAME_MARKETPLACE, false, false);
+    public Queue queueC(){
+        Integer priority = 10;
+        Long tempo = 60000L;        //Tempo em ms 60000L = 60s
+
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-max-priority", priority);           //Prioridade de consumo da msg
+        args.put("x-message-ttl", tempo);               //time-to-live: tempo de vida da msg
+        //Ligando a fila original na fila de DLQ
+        args.put("x-dead-letter-exchange", DLX_EXG_DIRECT);         //Msgs com erro serão direcionadas para essa exchange
+        args.put("x-dead-letter-routing-key", QUEUE_DLQ);           //Envia diretamente para fila, não passa pela exchange
+
+        return new Queue(QUEUE_C, true, false, false, args);
+    }
+
+    @Bean
+    public Queue queueDLQ(){
+        return new Queue(QUEUE_DLQ, true);
+    }
+
+    @Bean
+    public Queue queueDLQParkingLot(){
+        return new Queue(QUEUE_DLQ_PARKING_LOT, true);     //QUEUE_DLQ_PARKING_LOT não tem bind
     }
 
     @Bean
@@ -50,16 +71,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public FanoutExchange fanoutExchange(){
-        return new FanoutExchange(EXG_FANOUT, false, false);
+    public DirectExchange deadLetterExchange(){
+        return new DirectExchange(DLX_EXG_DIRECT, true, false);
     }
 
     @Bean
-    public Binding bindingProduct(){
-        return BindingBuilder
-                .bind(queueProduct())
-                .to(directExchangeProduct())
-                .with(RK_PRODUCT_LOG);
+    public FanoutExchange fanoutExchange(){
+        return new FanoutExchange(EXG_FANOUT, false, false);
     }
 
     @Bean
@@ -90,6 +108,22 @@ public class RabbitMQConfig {
                 .bind(queueB())
                 .to(directExchange())
                 .with(RK_B);
+    }
+
+    @Bean
+    public Binding bindingCDirect(){
+        return BindingBuilder
+                .bind(queueC())
+                .to(directExchange())
+                .with(RK_C);
+    }
+
+    @Bean
+    public Binding bindingDLQDirect(){
+        return BindingBuilder
+                .bind(queueDLQ())
+                .to(deadLetterExchange())
+                .with(RK_DLX);
     }
 
     @Bean
